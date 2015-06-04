@@ -6,7 +6,6 @@
  #include "WProgram.h"
 #endif
 #include <inttypes.h>
-#include <ti/sysbios/gates/GateMutex.h>
 
 /* DHT library 
 
@@ -24,7 +23,6 @@ written by Adafruit Industries
 
 class DHT {
  private:
-  GateMutex_Struct gate;
   uint8_t data[6];
   uint8_t _pin, _type, _count;
   unsigned long _lastreadtime;

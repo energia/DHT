@@ -16,7 +16,6 @@ void DHT::begin(void) {
   // set up the pins!
   pinMode(_pin, INPUT);
   _lastreadtime = 0;
-  GateMutex_construct(&gate, NULL);
 }
 
 //boolean S == Scale.  True == Farenheit; False == Celcius
@@ -41,11 +40,10 @@ float DHT::readTemperature(bool S) {
 	f *= -1;
       if(S)
 	f = convertCtoF(f);
-
       return f;
     }
   }
-  return 0;
+  return 100;
 }
 
 float DHT::convertCtoF(float c) {
@@ -103,22 +101,21 @@ boolean DHT::read(void) {
     // ie there was a rollover
     _lastreadtime = 0;
   }
-//  if (!firstreading && ((currenttime - _lastreadtime) < 2000)) {
-//    return true; // return last correct measurement
-    //delay(2000 - (currenttime - _lastreadtime));
-//  }
-//  firstreading = false;
+
+  if (!firstreading && ((currenttime - _lastreadtime) < 2000)) {
+    return true; // return last correct measurement
+    delay(2000 - (currenttime - _lastreadtime));
+  }
+  firstreading = false;
 //    Serial.print("Currtime: "); Serial.print(currenttime);
 //    Serial.print(" Lasttime: "); Serial.print(_lastreadtime);
-//  _lastreadtime = millis();
+  _lastreadtime = millis();
 
   data[0] = data[1] = data[2] = data[3] = data[4] = 0;
   
   // pull the pin high and wait 250 milliseconds
   pinMode(_pin, OUTPUT);
   digitalWrite(_pin, HIGH);
-  GateMutex_enter(GateMutex_handle(&gate));
-  setDelayResolution(1);
   delay(250);
 
   // now pull it low for ~20 milliseconds
@@ -155,8 +152,6 @@ boolean DHT::read(void) {
   }
 
   //interrupts();
-  setDelayResolution(250);
-  GateMutex_leave(GateMutex_handle(&gate), 0);
   
 #ifdef DEBUG
   Serial.println(j, DEC);
